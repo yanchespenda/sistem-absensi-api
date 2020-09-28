@@ -1,6 +1,7 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { schema } from '@ioc:Adonis/Core/Validator'
 import Application from '@ioc:Adonis/Core/Application'
+
 import path from 'path'
 import uuid from 'uuid'
 import axios from 'axios'
@@ -56,8 +57,7 @@ export default class ApisController {
                 } 
             })
         } catch (error) {
-            console.log('error', error)
-            return response.unprocessableEntity({
+            return response.internalServerError({
                 message: "Something went wrong"
             })
         }

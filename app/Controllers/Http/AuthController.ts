@@ -1,15 +1,10 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { schema } from '@ioc:Adonis/Core/Validator'
+import Hash from '@ioc:Adonis/Core/Hash'
+import TokenManagement from 'App/Helpers/TokenManagement'
 
-import fs from 'fs'
-import jwt from 'jsonwebtoken'
-import path from 'path'
-import bcrypt from 'bcrypt'
-
-const rootDir = path.join(process.cwd())
-// const saltRounds = 10
-const tokenPrivate = path.join(rootDir, 'secret.key')
-const privateKey = fs.readFileSync(tokenPrivate)
+import MdlUser from '../../Models/User'
+import MdlRoleUser from '../../Models/RoleUser'
 
 export default class AuthController {
 
@@ -34,7 +29,21 @@ export default class AuthController {
         const username = request.input('username')
         const password = request.input('password')
 
-        const match = await bcrypt.compare(password, username);
+        const user = await MdlUser.findBy('username', username)
+        if (!user) {
+            return response.badRequest({
+                message: "Credential failed"
+            })
+        }
+
+        let match = false
+        try {
+            match = await Hash.verify(user.password, password);
+        } catch (error) {
+            return response.internalServerError({
+                message: "Something went wrong"
+            })
+        }
 
         if(!match) {
             return response.badRequest({
@@ -42,8 +51,21 @@ export default class AuthController {
             })
         }
 
+        const userData = {
+            userId: user.id,
+        }
+
+        let token = ''
+        try {
+            token = this.generateToken({ user: userData })
+        } catch (error) {
+            return response.internalServerError({
+                message: "Something went wrong"
+            })
+        }
+
         return response.json({
-            message: "Success",
+            token
         })
     }
 
@@ -65,17 +87,69 @@ export default class AuthController {
         }
 
         const username = request.input('username')
+        const password = request.input('password')
 
-        const userData = {
-            username,
+        const userUnique = await MdlUser.findBy('username', username)
+        if (userUnique) {
+            return response.unprocessableEntity({
+                message: "Username has been used"
+            })
         }
 
-        const token = jwt.sign({ subject: userData }, privateKey, { algorithm: 'RS256', expiresIn: '12h' });
+        const user = new MdlUser()
+        user.username = username
+        user.password = password
+        await user.save()
+
+        const roles = new MdlRoleUser()
+        roles.userId = user.id
+        roles.roleId = 2
+        await roles.save()
+
+        const userData = {
+            userId: user.id,
+        }
+
+        let token = ''
+        try {
+            token = this.generateToken({ user: userData })
+        } catch (error) {
+            return response.internalServerError({
+                message: "Something went wrong"
+            })
+        }
 
         return response.json({
-            message: "Success",
-
             token
         })
+    }
+
+    public async whoAmI({ request, response }: HttpContextContract) {
+        const getAuth = request.auth
+        if (!getAuth) {
+            return response.badRequest({
+                message: "Missing auth"
+            })
+        }
+
+        const getRoles = request.roles
+
+        const getUserData = await MdlUser.find(getAuth.userId)
+
+        return response.json({
+            auth: getAuth,
+            roles: getRoles,
+            userData: getUserData
+        })
+    }
+
+    private generateToken(payload: any) {
+        const tokenManagement = new TokenManagement()
+        try {
+            const token = tokenManagement.hash(payload)
+            return token
+        } catch (error) {
+            throw 'Generate token error'
+        }
     }
 }

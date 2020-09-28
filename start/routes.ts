@@ -29,8 +29,16 @@ Route.get('/', async () => {
 Route.group(() => {
   Route.post('/signin', 'AuthController.signin')
   Route.post('/signup', 'AuthController.signup')
+
+  Route.get('/me', 'AuthController.whoAmI').middleware('auth').middleware('acl:admin,mahasiswa')
 }).prefix('auth')
 
 Route.group(() => {
   Route.post('/verify', 'ApisController.verify')
-}).prefix('api')
+
+  Route.group(() => {
+    Route.post('/avatar', 'UsersController.uploadAvatar')
+    Route.post('/face', 'UsersController.uploadFace')
+    Route.post('/face/url', 'UsersController.faceUrl')
+  }).prefix('user')
+}).prefix('api').middleware('auth')
