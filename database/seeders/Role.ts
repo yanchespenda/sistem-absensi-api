@@ -10,9 +10,14 @@ export default class RoleSeeder extends BaseSeeder {
         description: 'Administrator',
       },
       {
-        name: 'Mahasiswa',
-        slug: 'mahasiswa',
-        description: 'Mahasiswa / Mahasiswi',
+        name: 'Staff',
+        slug: 'staff',
+        description: 'Staff',
+      },
+      {
+        name: 'Karyawan',
+        slug: 'karyawan',
+        description: 'Karyawan / Karyawati',
       },
     ])
 

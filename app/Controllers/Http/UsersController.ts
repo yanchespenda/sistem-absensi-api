@@ -10,6 +10,7 @@ import fs from 'fs'
 
 import MdlUser from '../../Models/User'
 import MdlUserFace from '../../Models/UserFace'
+import { SidenavMenu, SidenavMenuChildren } from 'App/Interfaces/UserSidenav'
 
 const MAX_FACE_DATA = 10
 
@@ -169,6 +170,115 @@ export default class UsersController {
             url: url,
             faceId: validated.faceId
         })
+    }
+
+
+    async sidenav({ request, response }: HttpContextContract) {
+        if (request.roles?.length === 0) {
+            return response.forbidden({
+                message: "You dont have any role"
+            })
+        }
+
+        let menuList: SidenavMenu[] = []
+
+        let menu: SidenavMenu = {
+            url: '/',
+            title: 'Dashboard',
+            icon: {
+                enable: true,
+                name: 'DashboardIcon'
+            }
+        }
+        let menuChildren: SidenavMenuChildren
+        menuList.push(menu)
+
+        let menuListAdmin: SidenavMenuChildren[] = []
+        let menuListStaff: SidenavMenuChildren[] = []
+        let menuListKaryawan: SidenavMenuChildren[] = []
+
+        request.roles?.forEach(role => {
+
+            if (role.slug === 'admin') {
+                menuChildren = {
+                    url: '/admin/users',
+                    title: 'Users',
+                    icon: {
+                        enable: true,
+                        name: 'AccountBoxIcon'
+                    }
+                }
+                menuListAdmin.push(menuChildren)
+
+                menuChildren = {
+                    url: '/admin/attendance',
+                    title: 'Atendances',
+                    icon: {
+                        enable: true,
+                        name: 'PeopleIcon'
+                    }
+                }
+                menuListAdmin.push(menuChildren)
+
+            }
+
+            if (role.slug === 'staff') {
+                menuChildren = {
+                    url: '/staff/attendance',
+                    title: 'Atendances',
+                    icon: {
+                        enable: true,
+                        name: 'PeopleIcon'
+                    }
+                }
+                menuListStaff.push(menuChildren)
+
+            }
+
+            if (role.slug === 'karyawan') {
+                menuChildren = {
+                    url: '/attendance',
+                    title: 'Atendances',
+                    icon: {
+                        enable: true,
+                        name: 'PeopleIcon'
+                    }
+                }
+                menuListKaryawan.push(menuChildren)
+
+            }
+
+        })
+
+        if (menuListAdmin.length > 0) {
+            menu = {
+                url: '/',
+                title: 'Administrator',
+                children: menuListAdmin
+            }
+            menuList.push(menu)
+        }
+        if (menuListStaff.length > 0) {
+            menu = {
+                url: '/',
+                title: 'Staff Menu',
+                children: menuListStaff
+            }
+            menuList.push(menu)
+        }
+        if (menuListKaryawan.length > 0) {
+            menu = {
+                url: '/',
+                title: 'Karyawan Menu',
+                children: menuListKaryawan
+            }
+            menuList.push(menu)
+        }
+
+        // console.log('request.auth', request.auth)
+        // console.log('request.roles', request.roles)
+
+        return response.ok(menuList)
     }
 
 }

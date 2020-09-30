@@ -31,7 +31,7 @@ export default class AuthController {
 
         const user = await MdlUser.findBy('username', username)
         if (!user) {
-            return response.badRequest({
+            return response.unprocessableEntity({
                 message: "Credential failed"
             })
         }
@@ -46,7 +46,7 @@ export default class AuthController {
         }
 
         if(!match) {
-            return response.badRequest({
+            return response.unprocessableEntity({
                 message: "Credential failed"
             })
         }
@@ -123,6 +123,26 @@ export default class AuthController {
             token
         })
     }
+
+    public async verify({ request, response }: HttpContextContract) {
+        if (!request.auth) {
+            return response.forbidden({
+                message: "Auth failed"
+            })
+        }
+
+        // await this.sleep(1000)
+
+        return response.send({
+            message: "OK"
+        })
+    }
+
+    async sleep(ms) {
+        return new Promise((resolve) => {
+          setTimeout(resolve, ms);
+        })
+    } 
 
     public async whoAmI({ request, response }: HttpContextContract) {
         const getAuth = request.auth

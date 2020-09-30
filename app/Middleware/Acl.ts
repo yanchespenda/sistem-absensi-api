@@ -18,18 +18,31 @@ export default class AclMiddleware {
         message: 'Token not valid'
       })
     }
-    
-    const getRole = await Role.query().whereIn('slug', allowedAcl).select(['id', 'slug'])
-    if (getRole.length === 0) {
-      return ctx.response.internalServerError({
-        message: 'Role not found'
-      })
-    }
 
-    if (getRole.length !== allowedAcl.length) {
-      return ctx.response.internalServerError({
-        message: 'Some role not found'
-      })
+    let isAll = false
+    allowedAcl.forEach(acl => {
+      if (acl === 'all') {
+        isAll = true
+      }
+    })
+    
+    let getRole: Role[]
+    if (isAll) {
+      getRole = await Role.query().select(['id', 'slug'])
+    } else {
+      getRole = await Role.query().whereIn('slug', allowedAcl).select(['id', 'slug'])
+
+      if (getRole.length === 0) {
+        return ctx.response.internalServerError({
+          message: 'Role not found'
+        })
+      }
+
+      if (getRole.length !== allowedAcl.length) {
+        return ctx.response.internalServerError({
+          message: 'Some role not found'
+        })
+      }
     }
 
     const joinRoleId = getRole.map(data => data.id)
