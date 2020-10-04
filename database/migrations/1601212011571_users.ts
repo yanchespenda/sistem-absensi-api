@@ -8,9 +8,11 @@ export default class Users extends BaseSchema {
       table.increments('id')
       table.string('username').unique().notNullable()
       table.string('password').notNullable()
-      table.string('avatar')
+      table.integer('avatar').unsigned()
       table.timestamp('lastAttendedAt')
       table.timestamps(true)
+
+      table.foreign('avatar').references('id').inTable('storages').onDelete('SET NULL').onUpdate('NO ACTION')
     })
   }
 

@@ -40,9 +40,23 @@ Route.group( () => {
 
   Route.group( () => {
     Route.get('/sidenav', 'UsersController.sidenav').middleware('acl:all')
+    Route.get('/me', 'UsersController.me')
 
     Route.post('/avatar', 'UsersController.uploadAvatar')
     Route.post('/face', 'UsersController.uploadFace')
     Route.post('/face/url', 'UsersController.faceUrl')
   }).prefix('user')
+
+  /* Admin */
+  Route.group( () => {
+
+    Route.group( () => {
+      Route.get('/', 'Role/AdminsController.users')
+      Route.get('/:id/edit', 'Role/AdminsController.userEdit').where('id', /^[0-9]+$/)
+      Route.post('/:id/avatar', 'Role/AdminsController.userEditAvatar').where('id', /^[0-9]+$/)
+    }).prefix('user')
+    
+
+
+  }).prefix('admin').middleware('acl:admin')
 }).prefix('api').middleware('auth')

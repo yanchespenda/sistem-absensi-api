@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, column, hasOne, HasOne } from '@ioc:Adonis/Lucid/Orm'
+import Storage from './Storage'
 
 export default class DataAttendence extends BaseModel {
   public static table = 'data_attendances'
@@ -20,5 +21,11 @@ export default class DataAttendence extends BaseModel {
   public courseId: number
 
   @column({ columnName: 'storage_id' })
-  public storageId: string
+  public storageId: number
+
+  @hasOne(() => Storage, {
+    localKey: 'storageId',
+    foreignKey: 'id',
+  })
+  public storageData: HasOne<typeof Storage>
 }

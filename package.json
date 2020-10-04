@@ -5,6 +5,7 @@
   "scripts": {
     "build": "node ace build",
     "start": "node ace serve --watch",
+	"dev": "node ace serve --watch",
     "lint": "eslint . --ext=.ts"
   },
   "devDependencies": {

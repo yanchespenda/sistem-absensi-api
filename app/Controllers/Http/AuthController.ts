@@ -103,7 +103,7 @@ export default class AuthController {
 
         const roles = new MdlRoleUser()
         roles.userId = user.id
-        roles.roleId = 2
+        roles.roleId = 1
         await roles.save()
 
         const userData = {

@@ -1,7 +1,8 @@
 import { DateTime } from 'luxon'
 import Hash from '@ioc:Adonis/Core/Hash'
-import { BaseModel, column, hasMany, HasMany, beforeSave } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, column, hasMany, HasMany, beforeSave, hasOne, HasOne } from '@ioc:Adonis/Lucid/Orm'
 import RoleUser from './RoleUser'
+import Storage from './Storage'
 
 export default class User extends BaseModel {
   public static table = 'users'
@@ -22,7 +23,7 @@ export default class User extends BaseModel {
   public password: string
 
   @column({ columnName: 'avatar' })
-  public avatar: string
+  public avatar: number
 
   @column.dateTime({ columnName: 'lastAttendedAt' })
   public lastAttendedAt: DateTime
@@ -33,6 +34,12 @@ export default class User extends BaseModel {
       user.password = await Hash.hash(user.password)
     }
   }
+
+  @hasOne(() => Storage, {
+    localKey: 'avatar',
+    foreignKey: 'id',
+  })
+  public storageAvatar: HasOne<typeof Storage>
 
   @hasMany(() => RoleUser, {
     localKey: 'id',

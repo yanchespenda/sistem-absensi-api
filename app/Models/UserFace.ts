@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo, BelongsTo } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, column, belongsTo, BelongsTo, hasOne, HasOne } from '@ioc:Adonis/Lucid/Orm'
 import User from './User'
+import Storage from './Storage'
 
 export default class UserFace extends BaseModel {
   @column({ isPrimary: true })
@@ -16,11 +17,17 @@ export default class UserFace extends BaseModel {
   public userId: number
 
   @column({ columnName: 'storage_id' })
-  public storageId: string
+  public storageId: number
 
   @belongsTo(() => User, {
     localKey: 'id',
     foreignKey: 'userId',
   })
   public user: BelongsTo<typeof User>
+
+  @hasOne(() => Storage, {
+    localKey: 'storageId',
+    foreignKey: 'id',
+  })
+  public storageData: HasOne<typeof Storage>
 }

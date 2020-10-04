@@ -10,6 +10,7 @@ import fs from 'fs'
 
 import MdlUser from '../../Models/User'
 import MdlUserFace from '../../Models/UserFace'
+import MdlStorage from '../../Models/Storage'
 import { SidenavMenu, SidenavMenuChildren } from 'App/Interfaces/UserSidenav'
 
 const MAX_FACE_DATA = 10
@@ -61,17 +62,26 @@ export default class UsersController {
         }
 
         if (user.avatar) {
-            try {
-                await imageManagement.removeImage(user.avatar)
-            } catch (error) {
-                console.log('e1b', error)
-                return response.internalServerError({
-                    message: "Something went wrong"
-                })
+            const getLastPublicId = await MdlStorage.find(user.avatar)
+            if (getLastPublicId) {
+                try {
+                    await imageManagement.removeImage(getLastPublicId.publicId)
+                    await getLastPublicId.delete()
+                } catch (error) {
+                    console.log('e1b', error)
+                    return response.internalServerError({
+                        message: "Something went wrong"
+                    })
+                }
             }
         }
 
-        user.avatar = upload.public_id
+        const getStorage = await MdlStorage.create({
+            publicId: upload.public_id,
+            raw: upload
+        })
+
+        user.avatar = getStorage.id
         await user.save()
 
         fs.unlinkSync(moveResource)
@@ -128,7 +138,13 @@ export default class UsersController {
 
         const userFace = new MdlUserFace()
         userFace.userId = getUserId
-        userFace.storageId = upload.public_id
+
+        const getStorage = await MdlStorage.create({
+            publicId: upload.public_id,
+            raw: upload
+        })
+
+        userFace.storageId = getStorage.id
         await userFace.save()
 
         fs.unlinkSync(moveResource)
@@ -158,9 +174,9 @@ export default class UsersController {
         const imageManagement = new ImageManagement()
         let url
         try {
-            url = await imageManagement.publicURL(validated.faceId)
+            url = await imageManagement.privateURL(validated.faceId)
         } catch (error) {
-            console.log('error:UsersController:faceUrl:imageManagement:publicURL', error)
+            console.log('error:UsersController:faceUrl:imageManagement:privateURL', error)
             return response.internalServerError({
                 message: "Something went wrong"
             })
@@ -171,7 +187,6 @@ export default class UsersController {
             faceId: validated.faceId
         })
     }
-
 
     async sidenav({ request, response }: HttpContextContract) {
         if (request.roles?.length === 0) {
@@ -278,7 +293,78 @@ export default class UsersController {
         // console.log('request.auth', request.auth)
         // console.log('request.roles', request.roles)
 
+        // await this.sleep(2000)
+
         return response.ok(menuList)
+    }
+
+    async me({ request, response }: HttpContextContract) {
+        if (!request.auth?.userId) {
+            return response.forbidden({
+                message: "Auth token required"
+            })
+        }
+
+        const userId = request.auth.userId
+        const user = await MdlUser.find(userId)
+        if (!user) {
+            return response.unprocessableEntity({
+                message: "User not found"
+            })
+        }
+
+        const imageManagement = new ImageManagement()
+
+        let url
+        if (user.avatar) {
+            const getAvatarData = await MdlStorage.find(user.avatar)
+            if (getAvatarData) {
+                const parseAvatarData = JSON.parse(getAvatarData.raw)
+                try {
+                    const filename = getAvatarData.publicId + '.' + parseAvatarData.format
+                    url = await imageManagement.publicURL(filename, parseAvatarData.version, {
+                        width: 36,
+                        height: 36,
+                        crop: "fit" 
+                    })
+                } catch (error) {
+                    console.log('error:UsersController:me:imageManagement:publicURL', error)
+                    return response.internalServerError({
+                        message: "Something went wrong"
+                    })
+                }
+            }
+        }
+
+        let userMenu = [
+            {
+                url: '/account/avatar',
+                title: 'Setting avatar',
+                icon: {
+                    enable: true,
+                    name: 'FaceIcon'
+                }
+            },
+            {
+                url: '/account/setting',
+                title: 'Setting account',
+                icon: {
+                    enable: true,
+                    name: 'SettingsIcon'
+                }
+            }
+        ]
+
+        return response.ok({
+            avatar: url,
+            menu: userMenu
+        })
+    }
+
+    async sleep(ms) {
+        return new Promise((resolve) => {
+          setTimeout(resolve, ms);
+        })
     }
 
 }

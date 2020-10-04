@@ -72,9 +72,17 @@ export default class ImageManagement {
         }
     }
 
-    async publicURL(filename) {
+    async privateURL(filename) {
         try {
-            return cloudinary.v2.url(filename, {sign_url: true, type: "private"})
+            return cloudinary.v2.url(filename, {secure: true, sign_url: true, type: "private"})
+        } catch (error) {
+            console.log('error:ImageManagement:privateURL:cloudinary', error)
+        }
+    }
+
+    async publicURL(filename, version = 0, transformation = {}) {
+        try {
+            return cloudinary.v2.url(filename, { secure: true, version: version, transformation: transformation, sign_url: true })
         } catch (error) {
             console.log('error:ImageManagement:publicURL:cloudinary', error)
         }
