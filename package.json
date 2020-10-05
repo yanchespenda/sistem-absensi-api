@@ -5,7 +5,7 @@
   "scripts": {
     "build": "node ace build",
     "start": "node ace serve --watch",
-	"dev": "node ace serve --watch",
+    "dev": "node ace serve --watch",
     "lint": "eslint . --ext=.ts"
   },
   "devDependencies": {
@@ -24,6 +24,7 @@
     "@adonisjs/fold": "^6.0.0",
     "@adonisjs/lucid": "^8.4.4",
     "@types/jsonwebtoken": "^8.5.0",
+    "@types/luxon": "^1.25.0",
     "@types/sharp": "^0.26.0",
     "@types/uuid": "^8.3.0",
     "axios": "^0.20.0",
@@ -31,7 +32,6 @@
     "form-data": "^3.0.0",
     "jsonwebtoken": "^8.5.1",
     "luxon": "^1.25.0",
-    "moment": "^2.29.0",
     "mysql": "^2.18.1",
     "phc-argon2": "^1.0.10",
     "phc-bcrypt": "^1.0.3",

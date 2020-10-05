@@ -28,6 +28,9 @@ export default class User extends BaseModel {
   @column.dateTime({ columnName: 'lastAttendedAt' })
   public lastAttendedAt: DateTime
 
+  @column.dateTime({ columnName: 'lastLoggedAt' })
+  public lastLoggedAt: DateTime
+
   @beforeSave()
   public static async hashPassword (user: User) {
     if (user.$dirty.password) {

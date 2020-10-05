@@ -54,9 +54,12 @@ Route.group( () => {
       Route.get('/', 'Role/AdminsController.users')
       Route.get('/:id/edit', 'Role/AdminsController.userEdit').where('id', /^[0-9]+$/)
       Route.post('/:id/avatar', 'Role/AdminsController.userEditAvatar').where('id', /^[0-9]+$/)
+      Route.post('/:id/save', 'Role/AdminsController.userEditSave').where('id', /^[0-9]+$/)
+      Route.delete('/:id/delete', 'Role/AdminsController.userDelete').where('id', /^[0-9]+$/)
     }).prefix('user')
     
 
-
   }).prefix('admin').middleware('acl:admin')
+
+
 }).prefix('api').middleware('auth')

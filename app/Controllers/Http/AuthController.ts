@@ -6,6 +6,8 @@ import TokenManagement from 'App/Helpers/TokenManagement'
 import MdlUser from '../../Models/User'
 import MdlRoleUser from '../../Models/RoleUser'
 
+import { DateTime } from "luxon"
+
 export default class AuthController {
 
     public async signin({ request, response }: HttpContextContract) {
@@ -64,6 +66,9 @@ export default class AuthController {
             })
         }
 
+        user.lastLoggedAt = DateTime.local()
+        await user.save()
+
         return response.json({
             token
         })
@@ -103,7 +108,7 @@ export default class AuthController {
 
         const roles = new MdlRoleUser()
         roles.userId = user.id
-        roles.roleId = 1
+        roles.roleId = 3
         await roles.save()
 
         const userData = {

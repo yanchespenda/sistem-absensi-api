@@ -9,6 +9,7 @@ export default class Users extends BaseSchema {
       table.string('username').unique().notNullable()
       table.string('password').notNullable()
       table.integer('avatar').unsigned()
+      table.timestamp('lastLoggedAt')
       table.timestamp('lastAttendedAt')
       table.timestamps(true)
 

@@ -1,5 +1,5 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import { schema } from '@ioc:Adonis/Core/Validator'
+import { schema, rules } from '@ioc:Adonis/Core/Validator'
 import Application from '@ioc:Adonis/Core/Application'
 
 import { v4 as uuidv4 } from 'uuid'
@@ -40,7 +40,7 @@ export default class AdminsController {
         }
 
         const { page, perPage } = validated
-        const getOffset = page > 0 ? (page - 1) * perPage : 0
+        const getOffset = page > 0 ? (page) * perPage : 0
 
         const userCount = await MdlUser.query().count('id as total')
 
@@ -52,16 +52,23 @@ export default class AdminsController {
         }
 
         if (userCount[0].total > 0) {
-            const user = await MdlUser.query().limit(perPage).offset(getOffset)
+            const user = await MdlUser.query().limit(perPage).offset(getOffset).orderBy('id', 'desc')
 
-            let currentNumber = 1
+            let currentNumber = getOffset + 1
             user.forEach(item => {
-                returnUser.push({
+                let user = {
                     no: currentNumber,
                     id: item.id,
                     username: item.username,
                     lastAttendAt: item.lastAttendedAt,
-                })
+                    lastLoggedAt: item.lastLoggedAt
+                }
+                if (request.auth?.userId) {
+                    if (item.id === request.auth.userId) {
+                        user.username = `${item.username} [You]`
+                    }
+                }
+                returnUser.push(user)
                 currentNumber++
             })
         }
@@ -120,6 +127,88 @@ export default class AdminsController {
             lastAttendAt: user.lastAttendedAt,
             createdAt: user.createdAt,
             avatar: avatar,
+        })
+    }
+
+    /**
+     * User edit save
+     */
+    async userEditSave({ request, response, params }: HttpContextContract) {
+        if (!params.id) {
+            return response.badRequest({
+                message: "Param id required"
+            })
+        }
+
+        const validated = await request.validate({
+            schema: schema.create({
+                username: schema.string(),
+                password: schema.string.optional({}, [
+                    rules.minLength(6),
+                    rules.maxLength(25)
+                ]),
+            }),
+            messages: {
+                'username.required': 'Username required',
+                'password.minLength': 'Password to short',
+                'password.maxLength': 'Password to long',
+            }
+        })
+
+        const { username, password } = validated
+        const userId = params.id
+        const user = await MdlUser.find(userId)
+        if (!user) {
+            return response.unprocessableEntity({
+                message: "User not found"
+            })
+        }
+
+        console.log('password', password)
+
+        user.username = username
+        // user.password = password
+        await user.save()
+
+        return response.ok({
+            message: "User saved"
+        })
+    }
+
+    /**
+     * User delete
+     */
+    async userDelete({ request, response, params }: HttpContextContract) {
+        if (!params.id) {
+            return response.badRequest({
+                message: "Param id required"
+            })
+        }
+
+        const userId = params.id
+
+        const user = await MdlUser.find(userId)
+        if (!user) {
+            return response.unprocessableEntity({
+                message: "User not found"
+            })
+        }
+
+        let enableDelete = true
+        if (request.auth?.userId == userId) {
+            enableDelete = false
+        }
+
+        if (enableDelete) {
+            // await user.delete()
+        } else {
+            return response.ok({
+                message: "Unable to self delete"
+            })
+        }
+
+        return response.ok({
+            message: "User deleted"
         })
     }
 
@@ -210,7 +299,7 @@ export default class AdminsController {
                 crop: "fill"
             })
         } catch (error) {
-            
+            console.log('error', error)
         }
 
         return response.ok({
