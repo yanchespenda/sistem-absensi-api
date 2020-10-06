@@ -4,6 +4,8 @@ import User from './User'
 import Storage from './Storage'
 
 export default class UserFace extends BaseModel {
+  public static table = 'user_faces'
+
   @column({ isPrimary: true })
   public id: number
 
@@ -18,6 +20,9 @@ export default class UserFace extends BaseModel {
 
   @column({ columnName: 'storage_id' })
   public storageId: number
+
+  @column({ columnName: 'active' })
+  public active: boolean
 
   @belongsTo(() => User, {
     localKey: 'id',

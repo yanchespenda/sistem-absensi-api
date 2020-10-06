@@ -8,6 +8,7 @@ export default class UserFaces extends BaseSchema {
       table.increments('id').index()
       table.integer('user_id').unsigned().notNullable().index()
       table.integer('storage_id').unsigned()
+      table.boolean('active').defaultTo(false)
       table.timestamps(true)
 
       table.foreign('user_id').references('id').inTable('users').onDelete('CASCADE').onUpdate('RESTRICT')

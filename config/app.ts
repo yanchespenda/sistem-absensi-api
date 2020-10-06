@@ -12,6 +12,10 @@ import { RequestConfig } from '@ioc:Adonis/Core/Request'
 import { ResponseConfig } from '@ioc:Adonis/Core/Response'
 import { ProfilerConfig } from '@ioc:Adonis/Core/Profiler'
 
+import { Settings } from 'luxon'
+
+Settings.defaultZoneName = "Asia/Jakarta"
+
 type HttpConfig = RequestConfig & ResponseConfig
 
 /*

@@ -18,7 +18,7 @@ export default class ImageManagement {
         let image
         try {
             image = path.join(Application.tmpPath('uploads'), filename)
-            await sharp(face).resize({width: 1000}).jpeg().toFile(image)
+            await sharp(face).resize({width: 1000, height: 1000}).jpeg().toFile(image)
         } catch (error) {
             console.log('error:ImageManagement:uploadFace:sharp', error)
             throw 'Failed to convert image'

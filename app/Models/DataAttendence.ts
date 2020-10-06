@@ -17,11 +17,11 @@ export default class DataAttendence extends BaseModel {
   @column({ columnName: 'user_id' })
   public userId: number
 
-  @column({ columnName: 'course_id' })
-  public courseId: number
-
   @column({ columnName: 'storage_id' })
   public storageId: number
+
+  @column({ columnName: 'attend_type' })
+  public attendType: number
 
   @hasOne(() => Storage, {
     localKey: 'storageId',
