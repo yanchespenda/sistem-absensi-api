@@ -44,7 +44,8 @@ export default class AuthController {
         } catch (error) {
             console.log('err', error)
             return response.internalServerError({
-                message: "Something went wrong"
+                message: "Something went wrong",
+                error
             })
         }
 
@@ -64,7 +65,8 @@ export default class AuthController {
         } catch (error) {
             console.log('err', error)
             return response.internalServerError({
-                message: "Something went wrong"
+                message: "Something went wrong",
+                error
             })
         }
 
