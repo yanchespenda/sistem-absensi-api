@@ -42,6 +42,7 @@ export default class AuthController {
         try {
             match = await Hash.verify(user.password, password);
         } catch (error) {
+            console.log('err', error)
             return response.internalServerError({
                 message: "Something went wrong"
             })
@@ -61,6 +62,7 @@ export default class AuthController {
         try {
             token = this.generateToken({ user: userData })
         } catch (error) {
+            console.log('err', error)
             return response.internalServerError({
                 message: "Something went wrong"
             })
@@ -119,6 +121,7 @@ export default class AuthController {
         try {
             token = this.generateToken({ user: userData })
         } catch (error) {
+            console.log('err', error)
             return response.internalServerError({
                 message: "Something went wrong"
             })
