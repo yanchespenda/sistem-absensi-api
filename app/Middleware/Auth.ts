@@ -31,7 +31,7 @@ export default class AuthMiddleware {
         throw 'Invalid token'
       }
     } catch(err) {
-      return ctx.response.forbidden({
+      return ctx.response.unauthorized({
         message: 'Invalid token'
       })
     }
@@ -39,7 +39,7 @@ export default class AuthMiddleware {
     const getUserId = decoded.user.userId || 0
     const userVerify = await User.find(getUserId)
     if (!userVerify) {
-      return ctx.response.forbidden({
+      return ctx.response.unauthorized({
         message: 'Invalid token'
       })
     }

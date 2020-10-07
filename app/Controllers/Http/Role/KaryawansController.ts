@@ -177,7 +177,7 @@ export default class KaryawansController {
             })
         }
 
-        const userId = request.auth.userId
+        // const userId = request.auth.userId
 
         
     }

@@ -24,6 +24,9 @@ interface IUserCheck {
     available: boolean
     isEarly: boolean
     isLate: boolean
+    onNow: string | DateTime | null
+    infoMin: string | DateTime | null
+    infoMax: string | DateTime | null
 }
 
 export default class AttedanceManagement {
@@ -105,7 +108,10 @@ export default class AttedanceManagement {
         let enableAttadance: IUserCheck = {
             available: false,
             isEarly: false,
-            isLate: false
+            isLate: false,
+            onNow: null,
+            infoMax: null,
+            infoMin: null
         }
         if (getThisDay) {
             enableAttadance.available = true
@@ -113,6 +119,10 @@ export default class AttedanceManagement {
             const getNow = DateTime.local()
             const getMinimum = DateTime.fromObject({hour: this.attadanceIn.minH, minute: this.attadanceIn.minM})
             const getMaximum = DateTime.fromObject({hour: this.attadanceIn.maxH, minute: this.attadanceIn.maxM})
+
+            enableAttadance.onNow = getNow
+            enableAttadance.infoMin = getMinimum
+            enableAttadance.infoMax = getMaximum
 
             if (getNow < getMinimum) {
                 enableAttadance.isEarly = true
@@ -132,7 +142,10 @@ export default class AttedanceManagement {
         let enableAttadance: IUserCheck = {
             available: false,
             isEarly: false,
-            isLate: false
+            isLate: false,
+            onNow: null,
+            infoMax: null,
+            infoMin: null
         }
         if (getThisDay) {
             enableAttadance.available = true
@@ -140,7 +153,11 @@ export default class AttedanceManagement {
             const getNow = DateTime.local()
             const getMinimum = DateTime.fromObject({hour: this.attadanceOut.minH, minute: this.attadanceOut.minM})
             const getMaximum = DateTime.fromObject({hour: this.attadanceOut.maxH, minute: this.attadanceOut.maxM})
-        
+
+            enableAttadance.onNow = getNow
+            enableAttadance.infoMin = getMinimum
+            enableAttadance.infoMax = getMaximum
+
             if (getNow < getMinimum) {
                 enableAttadance.isEarly = true
             }
