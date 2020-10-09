@@ -11,6 +11,33 @@ export default class ImageManagement {
 
     } */
 
+    async uploadAttedance(face) {
+        const filename = uuidv4() + '.jpg'
+
+        let image
+        try {
+            const data = face.split(',')[1]
+            const bufferImage = Buffer.from(data, 'base64')
+            image = path.join(Application.tmpPath('uploads'), filename)
+            await sharp(bufferImage).resize({width: 1000, height: 1000}).jpeg().toFile(image)
+        } catch (error) {
+            console.log('error:ImageManagement:uploadAttedance:sharp', error)
+            throw 'Failed to convert image'
+        }
+
+        let response
+        try {
+            const publicId = 'storage/absensi/attedance/' + filename.replace('.jpg', '')
+            response = await cloudinary.v2.uploader.upload(face, {resource_type: 'image', public_id: publicId, type: "private", access_mode: "authenticated"})
+        } catch (error) {
+            console.log('error:ImageManagement:uploadAttedance:cloudinary', error)
+            throw 'Failed to upload attedance'
+        }
+        fs.unlinkSync(image)
+        
+        return response
+    }
+
     async uploadFace(face, filename: string = '') {
         if (filename === '') {
             filename = uuidv4() + '.jpg'
@@ -56,7 +83,7 @@ export default class ImageManagement {
             response = await cloudinary.v2.uploader.upload(image, {resource_type: 'image', public_id: publicId})
         } catch (error) {
             console.log('error:ImageManagement:uploadAvatar:cloudinary', error)
-            throw 'Failed to upload'
+            throw 'Failed to upload avatar'
         }
         fs.unlinkSync(image)
         
@@ -72,9 +99,9 @@ export default class ImageManagement {
         }
     }
 
-    async privateURL(filename) {
+    async privateURL(filename, version = 0, transformation = {}) {
         try {
-            return cloudinary.v2.url(filename, {secure: true, sign_url: true, type: "private"})
+            return cloudinary.v2.url(filename, {secure: true, sign_url: true, type: "private", version: version, transformation: transformation})
         } catch (error) {
             console.log('error:ImageManagement:privateURL:cloudinary', error)
         }

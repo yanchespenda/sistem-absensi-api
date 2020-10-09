@@ -44,6 +44,7 @@ export default class AuthMiddleware {
       })
     }
 
+    decoded.user.token = token
     ctx.request.auth = decoded.user
 
     // code for middleware goes here. ABOVE THE NEXT CALL

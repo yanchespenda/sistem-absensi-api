@@ -155,39 +155,6 @@ export default class UsersController {
         })
     }
 
-    async faceUrl({ request, response }: HttpContextContract) {
-        const validated = await request.validate({
-            schema: schema.create({
-                faceId: schema.string(),
-            }),
-            messages: {
-                'faceId.required': 'Face required',
-            }
-        })
-
-        if (!validated) {
-            return response.badRequest({
-                message: "Missing body"
-            })
-        }
-
-        const imageManagement = new ImageManagement()
-        let url
-        try {
-            url = await imageManagement.privateURL(validated.faceId)
-        } catch (error) {
-            console.log('error:UsersController:faceUrl:imageManagement:privateURL', error)
-            return response.internalServerError({
-                message: "Something went wrong"
-            })
-        }
-
-        return response.send({
-            url: url,
-            faceId: validated.faceId
-        })
-    }
-
     async sidenav({ request, response }: HttpContextContract) {
         if (request.roles?.length === 0) {
             return response.forbidden({
@@ -236,7 +203,7 @@ export default class UsersController {
                 menuListAdmin.push(menuChildren)
 
             }
-
+            
             if (role.slug === 'staff') {
                 menuChildren = {
                     url: '/staff/attendance',
@@ -257,6 +224,16 @@ export default class UsersController {
                     icon: {
                         enable: true,
                         name: 'PeopleIcon'
+                    }
+                }
+                menuListKaryawan.push(menuChildren)
+
+                menuChildren = {
+                    url: '/faces',
+                    title: 'Setting Faces',
+                    icon: {
+                        enable: true,
+                        name: 'FaceIcon'
                     }
                 }
                 menuListKaryawan.push(menuChildren)

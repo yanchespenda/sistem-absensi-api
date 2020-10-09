@@ -1,5 +1,6 @@
 interface IAuth {
   userId: number
+  token: string
 }
 
 interface IRoles {
