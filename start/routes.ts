@@ -82,6 +82,8 @@ Route.group( () => {
     Route.group( () => {
 
       Route.get('/', 'Role/KaryawansController.faceList')
+      Route.post('/:id/status', 'Role/KaryawansController.faceStatus')
+      Route.post('/:id/delete', 'Role/KaryawansController.faceDelete')
 
     }).prefix('face')
 

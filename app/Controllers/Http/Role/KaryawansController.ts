@@ -291,4 +291,71 @@ export default class KaryawansController {
 
         
     }
+
+    async faceStatus({ request, response, params }: HttpContextContract) {
+        if (!params.id) {
+            return response.badRequest({
+                message: "Param id required"
+            })
+        }
+
+        if (!request.auth?.userId) {
+            return response.forbidden({
+                message: "Auth token required"
+            })
+        }
+
+        const userId = request.auth.userId
+        const userFace = await UserFace.query().where('userId', userId).where('id', params.id)
+        if (userFace.length === 0) {
+            return response.notFound({
+                message: "User face not found"
+            })
+        }
+
+        userFace[0].active = !userFace[0].active
+        await userFace[0].save()
+
+        return response.ok({
+            message: "Face status updated"
+        })
+    }
+
+    async faceDelete({ request, response, params }: HttpContextContract) {
+        if (!params.id) {
+            return response.badRequest({
+                message: "Param id required"
+            })
+        }
+
+        if (!request.auth?.userId) {
+            return response.forbidden({
+                message: "Auth token required"
+            })
+        }
+
+        const userId = request.auth.userId
+        const userFace = await UserFace.query().where('userId', userId).where('id', params.id).preload('storageData')
+        if (userFace.length === 0) {
+            return response.notFound({
+                message: "User face not found"
+            })
+        }
+
+        const imageManagement = new ImageManagement()
+        try {
+            await imageManagement.removeImage(userFace[0].storageData.publicId)
+            await userFace[0].storageData.delete()
+        } catch (error) {
+            return response.internalServerError({
+                message: "Something went wrong"
+            })
+        }
+
+        await userFace[0].delete()
+
+        return response.ok({
+            message: "Face deleted"
+        })
+    }
 }
