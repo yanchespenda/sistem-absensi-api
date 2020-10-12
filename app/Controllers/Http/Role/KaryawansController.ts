@@ -12,7 +12,7 @@ import User from 'App/Models/User'
 import MdlStorage from '../../../Models/Storage'
 
 const FACE_RECOG_API = 'https://api.face-recognition.arproject.web.id'
-
+const MAX_FACE_DATA = 3
 
 export default class KaryawansController {
 
@@ -97,6 +97,14 @@ export default class KaryawansController {
 
         const imageManagement = new ImageManagement()
 
+        let resources: string[] = []
+        const getUserFace = await UserFace.query().where('userId', userId).where('active', true).preload('storageData')
+        if (getUserFace.length === 0) {
+            return response.unprocessableEntity({
+                message: "You dont have any active face"
+            })
+        }
+
         let upload
         try {
             upload = await imageManagement.uploadAttedance(face)
@@ -107,16 +115,12 @@ export default class KaryawansController {
             })
         }
 
-        let resources: string[] = []
-        const getUserFace = await UserFace.query().where('userId', userId).where('active', true).preload('storageData')
-        if (getUserFace.length > 0) {
-            getUserFace.forEach(item => {
-                const parseRaw = JSON.parse(item.storageData.raw)
-                if (parseRaw) {
-                    resources.push(parseRaw.secure_url)
-                }
-            })
-        }
+        getUserFace.forEach(item => {
+            const parseRaw = JSON.parse(item.storageData.raw)
+            if (parseRaw) {
+                resources.push(parseRaw.secure_url)
+            }
+        })
 
         let axiosData
         try {
@@ -125,22 +129,32 @@ export default class KaryawansController {
                 resources
             }
 
-            axiosData = await axios.post(`${FACE_RECOG_API}/verify/url`, formData, { 
+            axiosData = await axios.post(`${FACE_RECOG_API}/verify/url?detail=true`, formData, { 
                 headers: {
                     'authorization': 'Bearer ' + request.auth.token,
                     'Content-Type': 'application/json'
                 }
             })
         } catch (error) {
+            try {
+                await imageManagement.removeImage(upload.public_id)
+            } catch (error) {
+                console.log('error', error)
+            }
+            
             console.log('error', error)
             return response.internalServerError({
                 message: "Something went wrong"
             })
         }
 
-        // console.log('axiosData', axiosData)
-
+        console.log('axios', axiosData.data)
         if (!axiosData.data.result) {
+            try {
+                await imageManagement.removeImage(upload.public_id)
+            } catch (error) {
+                console.log('error', error)
+            }
             return response.ok({
                 message: "Sorry, your photo does not match with your saved face"
             })
@@ -226,7 +240,7 @@ export default class KaryawansController {
         }
 
         try {
-            await attedanceManagement.attedanceOutUser(userId, 0)
+            await attedanceManagement.attedanceOutUser(userId)
         } catch (error) {
             return response.internalServerError({
                 message: "Something went wrong"
@@ -280,16 +294,63 @@ export default class KaryawansController {
         return response.ok(faceData)
     }
 
-    async faceListAdd({ request, response }: HttpContextContract) {
+    async faceAdd({ request, response }: HttpContextContract) {
         if (!request.auth?.userId) {
             return response.forbidden({
                 message: "Auth token required"
             })
         }
 
-        // const userId = request.auth.userId
+        const validated = await request.validate({
+            schema: schema.create({
+                face: schema.string(),
+            }),
+            messages: {
+                'face.required': 'Face required',
+            }
+        })
 
+        const face = validated.face
+        if (!/data:image\//.test(face)) {
+            return response.unprocessableEntity({
+                message: "Face not valid"
+            })
+        }
+
+        const userId = request.auth.userId
+        const getUserFace = await UserFace.query().where('userId', userId).count('id as total')
+        if (getUserFace[0].total >= MAX_FACE_DATA) {
+            return response.unprocessableEntity({
+                message: "Face data was attemp max"
+            })
+        }
+
+        const imageManagement = new ImageManagement()
+
+        let upload
+        try {
+            upload = await imageManagement.uploadFace(face)
+        } catch (error) {
+            console.log('error', error)
+            return response.internalServerError({
+                message: "Something went wrong"
+            })
+        }
         
+        const userFace = new UserFace()
+        userFace.userId = userId
+
+        const getStorage = await MdlStorage.create({
+            publicId: upload.public_id,
+            raw: upload
+        })
+
+        userFace.storageId = getStorage.id
+        await userFace.save()
+
+        return response.ok({
+            message: "Face added"
+        })
     }
 
     async faceStatus({ request, response, params }: HttpContextContract) {

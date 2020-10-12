@@ -1,6 +1,7 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { schema } from '@ioc:Adonis/Core/Validator'
 import Application from '@ioc:Adonis/Core/Application'
+import Hash from '@ioc:Adonis/Core/Hash'
 
 import ImageManagement from "App/Helpers/ImageManagement"
 
@@ -9,11 +10,10 @@ import path from 'path'
 import fs from 'fs'
 
 import MdlUser from '../../Models/User'
-import MdlUserFace from '../../Models/UserFace'
+// import MdlUserFace from '../../Models/UserFace'
 import MdlStorage from '../../Models/Storage'
 import { SidenavMenu, SidenavMenuChildren } from 'App/Interfaces/UserSidenav'
 
-const MAX_FACE_DATA = 10
 
 export default class UsersController {
 
@@ -88,70 +88,6 @@ export default class UsersController {
 
         return response.send({
             data: upload
-        })
-    }
-
-    async uploadFace({ request, response }: HttpContextContract) {
-        const validated = await request.validate({
-            schema: schema.create({
-                face: schema.file({
-                    size: '2mb',
-                    extnames: ['jpg', 'png', 'jpeg'],
-                }),
-            }),
-            messages: {
-                'face.required': 'Face required',
-                'face.file.size': 'Face to large',
-                'face.file.extnames': 'Face extension must images',
-            }
-        })
-
-        if (!validated) {
-            return response.badRequest({
-                message: "Missing body"
-            })
-        }
-
-        await validated.face.move(Application.tmpPath('uploads'))
-        const resourceName = validated.face.fileName || uuidv4()
-        const moveResource = path.join(Application.tmpPath('uploads'), resourceName)
-
-        const getUserId = request.auth?.userId || 0        
-        const getUserFace = await MdlUserFace.query().where('userId', getUserId).count('id as total')
-        if (getUserFace[0].total >= MAX_FACE_DATA) {
-            return response.unprocessableEntity({
-                message: "Face data was attemp max"
-            })
-        }
-
-        const imageManagement = new ImageManagement()
-
-        let upload
-        try {
-            upload = await imageManagement.uploadFace(moveResource)
-        } catch (error) {
-            console.log('e1a', error)
-            return response.internalServerError({
-                message: "Something went wrong"
-            })
-        }
-
-        const userFace = new MdlUserFace()
-        userFace.userId = getUserId
-
-        const getStorage = await MdlStorage.create({
-            publicId: upload.public_id,
-            raw: upload
-        })
-
-        userFace.storageId = getStorage.id
-        await userFace.save()
-
-        fs.unlinkSync(moveResource)
-
-        return response.send({
-            url: imageManagement.publicURL(upload.public_id),
-            data: upload,
         })
     }
 
@@ -273,6 +209,63 @@ export default class UsersController {
         // await this.sleep(2000)
 
         return response.ok(menuList)
+    }
+
+    async password({ request, response }: HttpContextContract) {
+        const validated = await request.validate({
+            schema: schema.create({
+                passwordOld: schema.string(),
+                passwordNew: schema.string(),
+                passwordNewRepeat: schema.string(),
+            }),
+            messages: {
+                'passwordOld.required': 'Old password required',
+                'passwordNew.required': 'New password required',
+                'passwordNewRepeat.required': 'Repeat password required',
+            }
+        })
+
+        if (validated.passwordNew !== validated.passwordNewRepeat) {
+            return response.unprocessableEntity({
+                message: "Repeat password does not match"
+            })
+        }
+
+        const currentPassword = validated.passwordOld
+        const passwordNew = validated.passwordOld
+        
+
+        const userId = request.auth?.userId || 0
+
+        const user = await MdlUser.find(userId)
+        if (!user) {
+            return response.notFound({
+                message: "User not found"
+            })
+        }
+
+        let match = false
+        try {
+            match = await Hash.verify(user.password, currentPassword);
+        } catch (error) {
+            console.log('err', error)
+            return response.internalServerError({
+                message: "Something went wrong"
+            })
+        }
+
+        if(!match) {
+            return response.unprocessableEntity({
+                message: "Password invalid"
+            })
+        }
+
+        user.password = passwordNew
+        await user.save()
+
+        return response.ok({
+            message: "Password changed"
+        })
     }
 
     async me({ request, response }: HttpContextContract) {

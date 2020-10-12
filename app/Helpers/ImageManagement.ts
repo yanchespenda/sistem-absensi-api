@@ -38,14 +38,14 @@ export default class ImageManagement {
         return response
     }
 
-    async uploadFace(face, filename: string = '') {
-        if (filename === '') {
-            filename = uuidv4() + '.jpg'
-        }
+    async uploadFace(face) {
+        const filename = uuidv4() + '.jpg'
         let image
         try {
+            const data = face.split(',')[1]
+            const bufferImage = Buffer.from(data, 'base64')
             image = path.join(Application.tmpPath('uploads'), filename)
-            await sharp(face).resize({width: 1000, height: 1000}).jpeg().toFile(image)
+            await sharp(bufferImage).resize({width: 1000, height: 1000}).jpeg().toFile(image)
         } catch (error) {
             console.log('error:ImageManagement:uploadFace:sharp', error)
             throw 'Failed to convert image'

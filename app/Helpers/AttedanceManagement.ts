@@ -272,12 +272,11 @@ export default class AttedanceManagement {
         return true
     }
 
-    async attedanceOutUser(userId: number, storageId: number) {
+    async attedanceOutUser(userId: number) {
         try {
             await DataAttendence.create({
                 attendType: 2,
-                userId,
-                storageId
+                userId
             })
         } catch (error) {
             console.log('AttedanceManagement:attedanceOutUser:DataAttendence', error)

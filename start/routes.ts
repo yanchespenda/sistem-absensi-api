@@ -44,8 +44,17 @@ Route.group( () => {
     Route.get('/me', 'UsersController.me')
 
     Route.post('/avatar', 'UsersController.uploadAvatar')
-    Route.post('/face', 'UsersController.uploadFace')
-    Route.post('/face/url', 'UsersController.faceUrl')
+    
+
+    Route.group( () => {
+      Route.post('/', 'UsersController.uploadFace')
+      Route.post('/url', 'UsersController.faceUrl')
+    }).prefix('face')
+
+    Route.group( () => {
+      Route.post('/password', 'UsersController.password')
+    }).prefix('setting')
+
   }).prefix('user')
 
   /* Admin */
@@ -82,9 +91,12 @@ Route.group( () => {
     Route.group( () => {
 
       Route.get('/', 'Role/KaryawansController.faceList')
-      Route.post('/:id/status', 'Role/KaryawansController.faceStatus')
-      Route.post('/:id/delete', 'Role/KaryawansController.faceDelete')
+      Route.group( () => {
+        Route.post('status', 'Role/KaryawansController.faceStatus')
+        Route.post('delete', 'Role/KaryawansController.faceDelete')
+      }).prefix(':id').where('id', /^[0-9]+$/)
 
+      Route.post('/new', 'Role/KaryawansController.faceAdd')
     }).prefix('face')
 
 
