@@ -7,7 +7,8 @@
     "start": "node ace serve --watch",
     "dev": "node ace serve --watch",
     "lint": "eslint . --ext=.ts",
-	  "argon-build": "npx node-pre-gyp rebuild -C ./node_modules/argon2"
+    "argon-build": "npx node-pre-gyp rebuild -C ./node_modules/argon2",
+    "server": "node ace build --production && node ./build/server.js"
   },
   "devDependencies": {
     "@adonisjs/assembler": "^2.0.0",
