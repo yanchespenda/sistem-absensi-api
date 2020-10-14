@@ -7,14 +7,23 @@
 
 import proxyAddr from 'proxy-addr'
 import Env from '@ioc:Adonis/Core/Env'
+import Application from '@ioc:Adonis/Core/Application'
 import { LoggerConfig } from '@ioc:Adonis/Core/Logger'
 import { RequestConfig } from '@ioc:Adonis/Core/Request'
 import { ResponseConfig } from '@ioc:Adonis/Core/Response'
 import { ProfilerConfig } from '@ioc:Adonis/Core/Profiler'
 
 import { Settings } from 'luxon'
+import fs from 'fs'
 
 Settings.defaultZoneName = "Asia/Jakarta"
+
+try {
+  fs.mkdirSync(Application.tmpPath('uploads'), { recursive: true })
+} catch (error) {
+  console.log('Temp dir already exits')
+}
+
 
 type HttpConfig = RequestConfig & ResponseConfig
 
