@@ -64,14 +64,21 @@ export default class ImageManagement {
         return response
     }
 
-    async uploadAvatar(avatar, filename: string = '') {
+    async uploadAvatar(avatar, filename: string = '', isBase64 = false) {
         if (filename === '') {
             filename = uuidv4() + '.webp'
         }
         let image
         try {
-            image = path.join(Application.tmpPath('uploads'), filename)
-            await sharp(avatar).resize({width: 1000}).webp().toFile(image)
+            if (isBase64) {
+                const data = avatar.split(',')[1]
+                const bufferImage = Buffer.from(data, 'base64')
+                image = path.join(Application.tmpPath('uploads'), filename)
+                await sharp(bufferImage).resize({width: 1000, height: 1000}).jpeg().toFile(image)
+            } else {
+                image = path.join(Application.tmpPath('uploads'), filename)
+                await sharp(avatar).resize({width: 1000}).webp().toFile(image)
+            }
         } catch (error) {
             console.log('error:ImageManagement:uploadAvatar:sharp', error)
             throw 'Failed to convert image'
@@ -107,7 +114,7 @@ export default class ImageManagement {
         }
     }
 
-    async publicURL(filename, version = 0, transformation = {}) {
+    async publicURL(filename, version = 0, transformation = {}): Promise<any> {
         try {
             return cloudinary.v2.url(filename, { secure: true, version: version, transformation: transformation, sign_url: true })
         } catch (error) {

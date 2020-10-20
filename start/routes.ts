@@ -44,7 +44,7 @@ Route.group( () => {
     Route.get('/me', 'UsersController.me')
 
     Route.post('/avatar', 'UsersController.uploadAvatar')
-    
+    Route.post('/avatar64', 'UsersController.uploadAvatarBase64') 
 
     Route.group( () => {
       Route.post('/', 'UsersController.uploadFace')

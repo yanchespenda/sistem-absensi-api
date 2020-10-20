@@ -155,7 +155,7 @@ export default class KaryawansController {
             } catch (error) {
                 console.log('error', error)
             }
-            return response.ok({
+            return response.unprocessableEntity({
                 message: "Sorry, your photo does not match with your saved face"
             })
         }

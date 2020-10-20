@@ -14,6 +14,7 @@ import MdlUser from '../../Models/User'
 import MdlStorage from '../../Models/Storage'
 import { SidenavMenu, SidenavMenuChildren } from 'App/Interfaces/UserSidenav'
 
+const defaultAvatar = 'https://res.cloudinary.com/dslncjjz1/image/upload/v1601800167/storage/absensi/default_avatar.png'
 
 export default class UsersController {
 
@@ -88,6 +89,86 @@ export default class UsersController {
 
         return response.send({
             data: upload
+        })
+    }
+
+    async uploadAvatarBase64({ request, response }: HttpContextContract) {
+        const validated = await request.validate({
+            schema: schema.create({
+                avatar: schema.string(),
+            }),
+            messages: {
+                'avatar.required': 'Avatar required',
+            }
+        })
+
+        if (!validated) {
+            return response.badRequest({
+                message: "Missing body"
+            })
+        }
+
+        const moveResource = validated.avatar
+
+        const user = await MdlUser.find(request.auth?.userId)
+        if (!user) {
+            return response.unsupportedMediaType({
+                message: "User not found"
+            })
+        }
+
+        const imageManagement = new ImageManagement()
+
+        let upload
+        try {
+            upload = await imageManagement.uploadAvatar(moveResource, '', true)
+        } catch (error) {
+            console.log('e1a', error)
+            return response.internalServerError({
+                message: "Something went wrong"
+            })
+        }
+
+        if (user.avatar) {
+            const getLastPublicId = await MdlStorage.find(user.avatar)
+            if (getLastPublicId) {
+                try {
+                    await imageManagement.removeImage(getLastPublicId.publicId)
+                    await getLastPublicId.delete()
+                } catch (error) {
+                    console.log('e1b', error)
+                    return response.internalServerError({
+                        message: "Something went wrong"
+                    })
+                }
+            }
+        }
+
+        const getStorage = await MdlStorage.create({
+            publicId: upload.public_id,
+            raw: upload
+        })
+
+        user.avatar = getStorage.id
+        await user.save()
+
+        let url = defaultAvatar
+        try {
+            const filename = upload.publicId + '.' + upload.format
+            url = await imageManagement.publicURL(filename, upload.version, {
+                width: 36,
+                height: 36,
+                crop: "fit" 
+            })
+        } catch (error) {
+            console.log('error:UsersController:uploadAvatarBase64:imageManagement:publicURL', error)
+            return response.internalServerError({
+                message: "Something went wrong"
+            })
+        }
+
+        return response.send({
+            data: url
         })
     }
 
@@ -285,7 +366,7 @@ export default class UsersController {
 
         const imageManagement = new ImageManagement()
 
-        let url
+        let url = defaultAvatar
         if (user.avatar) {
             const getAvatarData = await MdlStorage.find(user.avatar)
             if (getAvatarData) {

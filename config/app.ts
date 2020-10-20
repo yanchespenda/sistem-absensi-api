@@ -18,9 +18,14 @@ import fs from 'fs'
 
 Settings.defaultZoneName = "Asia/Jakarta"
 
+/**
+ * Contoh try catch
+ */
 try {
+  // Aksi yang dijalankan
   fs.mkdirSync(Application.tmpPath('uploads'), { recursive: true })
 } catch (error) {
+  // Menampilkan kesalahan jika terjadi error pada aksi di atas
   console.log('Temp dir already exits')
 }
 
