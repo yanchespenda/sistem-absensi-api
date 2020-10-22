@@ -2,6 +2,16 @@ import WebOption from "App/Models/WebOption"
 import { DateTime, DurationObject } from "luxon"
 import DataAttendence from "App/Models/DataAttendence"
 
+interface DefaultAttedanceHistory {
+    date: string | DateTime
+    info: string | null
+    duration: string
+    wasIn: boolean
+    wasOut: boolean
+    dateIn: string
+    dateOut: string
+}
+
 interface IUserDataStatus {
     found: boolean
     wasIn: boolean
@@ -52,6 +62,7 @@ export default class AttedanceManagement {
         6: false,
         7: false
     }
+    private defaultHistoryDays = 14
 
     // constructor() { }
 
@@ -284,5 +295,51 @@ export default class AttedanceManagement {
         }
 
         return true
+    }
+
+    async attedanceList(userId: number, days: number = this.defaultHistoryDays) {
+        const getNow = DateTime.local()
+        return await DataAttendence.query().where('userId', userId).whereBetween('createdAt', [getNow.minus({days}).toString(), getNow.toString()])
+    }
+
+    async attedanceListTable(attedances: DataAttendence[]) {
+        let attedanceList: DefaultAttedanceHistory[] = []
+        for (const attedance of attedances) {
+            if (attedance.attendType === 1) {
+                const getDataOut = this.findDataOutIndexByCreatedAt(attedances, attedance.createdAt.toISODate())
+                let dataTemp: DefaultAttedanceHistory = {
+                    date: attedance.createdAt.toISODate(),
+                    duration: '',
+                    info: null,
+                    wasIn: true,
+                    wasOut: false,
+                    dateIn: attedance.createdAt.toString(),
+                    dateOut: ''
+                }
+                if (getDataOut) {
+                    const getDiff = getDataOut.createdAt.diff(attedance.createdAt, ['hours', 'minutes', 'seconds']).toObject()
+                    dataTemp.duration = this.convertDateObjectToString(getDiff)
+                    dataTemp.wasOut = true
+                    dataTemp.dateOut = getDataOut.createdAt.toString()
+                    dataTemp.duration = this.convertDateObjectToString(getDiff)
+                } else {
+                    dataTemp.duration = '-'
+                    dataTemp.info = 'Not yet attedanded out'
+                }
+                attedanceList.push(dataTemp)
+            }
+        }
+        return attedanceList
+    }
+
+    findDataOutIndexByCreatedAt(attedances: DataAttendence[], findWhat: string = '') {
+        for (const attedance of attedances) {
+            if (attedance.attendType === 2) {
+                if (attedance.createdAt.toISODate() === findWhat) {
+                    return attedance
+                }
+            }
+        }
+        return undefined
     }
 }
