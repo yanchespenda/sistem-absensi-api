@@ -64,7 +64,7 @@ export default class ImageManagement {
         return response
     }
 
-    async uploadAvatar(avatar, filename: string = '', isBase64 = false) {
+    async uploadAvatar(avatar: string, filename: string = '', isBase64 = false) {
         if (filename === '') {
             filename = uuidv4() + '.webp'
         }
@@ -97,7 +97,7 @@ export default class ImageManagement {
         return response
     }
 
-    async removeImage(filename) {
+    async removeImage(filename: string) {
         try {
             return await cloudinary.v2.api.delete_resources([filename])
         } catch (error) {
@@ -106,7 +106,7 @@ export default class ImageManagement {
         }
     }
 
-    async privateURL(filename, version = 0, transformation = {}) {
+    async privateURL(filename: string, version = 0, transformation = {}) {
         try {
             return cloudinary.v2.url(filename, {secure: true, sign_url: true, type: "private", version: version, transformation: transformation})
         } catch (error) {
@@ -114,7 +114,7 @@ export default class ImageManagement {
         }
     }
 
-    async publicURL(filename, version = 0, transformation = {}): Promise<any> {
+    async publicURL(filename: string, version = 0, transformation = {}): Promise<any> {
         try {
             return cloudinary.v2.url(filename, { secure: true, version: version, transformation: transformation, sign_url: true })
         } catch (error) {

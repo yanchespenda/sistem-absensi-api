@@ -246,6 +246,16 @@ export default class UsersController {
                 menuListKaryawan.push(menuChildren)
 
                 menuChildren = {
+                    url: '/history',
+                    title: 'History',
+                    icon: {
+                        enable: true,
+                        name: 'EventNote'
+                    }
+                }
+                menuListKaryawan.push(menuChildren)
+
+                menuChildren = {
                     url: '/faces',
                     title: 'Setting Faces',
                     icon: {

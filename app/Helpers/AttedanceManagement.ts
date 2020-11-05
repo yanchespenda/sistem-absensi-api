@@ -62,7 +62,7 @@ export default class AttedanceManagement {
         6: false,
         7: false
     }
-    private defaultHistoryDays = 14
+    private defaultHistoryDays = 60 // 14
 
     // constructor() { }
 

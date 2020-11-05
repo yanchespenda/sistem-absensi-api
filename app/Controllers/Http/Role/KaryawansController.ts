@@ -148,7 +148,7 @@ export default class KaryawansController {
             })
         }
 
-        console.log('axios', axiosData.data)
+        // console.log('axios', axiosData.data)
         if (!axiosData.data.result) {
             try {
                 await imageManagement.removeImage(upload.public_id)
