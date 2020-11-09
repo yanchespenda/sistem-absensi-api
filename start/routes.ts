@@ -71,10 +71,12 @@ Route.group( () => {
 
   }).prefix('admin').middleware('acl:admin')
 
+  /* Karyawan */
   Route.group( () => {
 
     Route.get('/status', 'Role/KaryawansController.getAttedanceStatus')
 
+    /* Attedance */
     Route.group( () => {
 
       Route.group( () => {
@@ -88,6 +90,7 @@ Route.group( () => {
 
     }).prefix('attedance')
     
+    /* Face */
     Route.group( () => {
 
       Route.get('/', 'Role/KaryawansController.faceList')
@@ -99,6 +102,11 @@ Route.group( () => {
       Route.post('/new', 'Role/KaryawansController.faceAdd')
     }).prefix('face')
 
+    /* History */
+    Route.group( () => {
+      Route.get('/', 'Role/KaryawansController.historyList')
+      Route.get('/generate', 'Role/KaryawansController.historyGenerate')
+    }).prefix('history')
 
   }).prefix('karyawan').middleware('acl:karyawan')
 
@@ -108,6 +116,8 @@ Route.group( () => {
   }).prefix('dashboard').middleware('acl:all')
 
 }).prefix('api').middleware('auth')
+
+// api/karyawan/history
 
 
 // const attadanceIn = {

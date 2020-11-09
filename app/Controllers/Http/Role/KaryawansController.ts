@@ -5,6 +5,7 @@ import { schema } from '@ioc:Adonis/Core/Validator'
 import { DateTime } from 'luxon'
 import ImageManagement from 'App/Helpers/ImageManagement'
 import axios from 'axios'
+import { Workbook } from "exceljs";
 // import FormData from 'form-data'
 
 import UserFace from 'App/Models/UserFace'
@@ -13,6 +14,16 @@ import MdlStorage from '../../../Models/Storage'
 
 const FACE_RECOG_API = 'https://api.face-recognition.arproject.web.id'
 const MAX_FACE_DATA = 3
+
+interface DashboardDataKaryawanAttedanceHistory {
+    date: string | DateTime
+    info: string | null
+    duration: string
+    wasIn: boolean
+    wasOut: boolean
+    dateIn: string
+    dateOut: string
+}
 
 export default class KaryawansController {
 
@@ -418,5 +429,148 @@ export default class KaryawansController {
         return response.ok({
             message: "Face deleted"
         })
+    }
+
+    async historyList({ request, response }: HttpContextContract) {
+        if (!request.auth?.userId) {
+            return response.forbidden({
+                message: "Auth token required"
+            })
+        }
+
+        let getParamMin = request.input('start')
+        let getParamMax = request.input('end')
+
+        if (!getParamMin) {
+            getParamMin = DateTime.local().minus({days: 30})
+        } else {
+            getParamMin = DateTime.fromISO(getParamMin)
+        }
+        if (!getParamMax) {
+            getParamMax = DateTime.local()
+        } else {
+            getParamMax = DateTime.fromISO(getParamMax)
+        }
+
+        // console.log('getParamMin', getParamMin)
+        // console.log('getParamMax', getParamMax)
+
+        const userId = request.auth?.userId || 0
+
+        const attedanceManagement = new AttedanceManagement()
+        await attedanceManagement.getAttadanceConfig()
+
+        const getAttedances = await attedanceManagement.attedanceListByDate(userId, getParamMin, getParamMax)
+        let attedanceList: DashboardDataKaryawanAttedanceHistory[] = []
+        if (getAttedances.length > 0) {
+            attedanceList = await attedanceManagement.attedanceListTable(getAttedances)
+        }
+
+
+        return response.ok(attedanceList)
+    }
+
+    async historyGenerate({ request, response }: HttpContextContract) {
+        if (!request.auth?.userId) {
+            return response.forbidden({
+                message: "Auth token required"
+            })
+        }
+
+        let getParamMin = request.input('start')
+        let getParamMax = request.input('end')
+
+        if (!getParamMin) {
+            getParamMin = DateTime.local().minus({days: 30})
+        } else {
+            getParamMin = DateTime.fromISO(getParamMin)
+        }
+        if (!getParamMax) {
+            getParamMax = DateTime.local()
+        } else {
+            getParamMax = DateTime.fromISO(getParamMax)
+        }
+
+        const userId = request.auth?.userId || 0
+
+        const attedanceManagement = new AttedanceManagement()
+        await attedanceManagement.getAttadanceConfig()
+
+        const getAttedances = await attedanceManagement.attedanceListByDate(userId, getParamMin, getParamMax)
+        let attedanceList: DashboardDataKaryawanAttedanceHistory[] = []
+        if (getAttedances.length > 0) {
+            attedanceList = await attedanceManagement.attedanceListTable(getAttedances)
+        }
+
+        const workbook = new Workbook()
+        workbook.creator = 'Administrator'
+        workbook.lastModifiedBy = 'Administrator'
+        workbook.created = DateTime.local().toJSDate()
+        workbook.modified = DateTime.local().toJSDate()
+        workbook.lastPrinted = DateTime.local().toJSDate()
+
+        const worksheet = workbook.addWorksheet('Attedance')
+
+        worksheet.columns = [
+            { 
+                header: 'Date', 
+                key: 'date', 
+                outlineLevel: 1,
+                width: 20,
+            },
+            { 
+                header: 'Time In', 
+                key: 'timeIn', 
+                outlineLevel: 1,
+                width: 15,
+            },
+            { 
+                header: 'Time Out', 
+                key: 'timeOut', 
+                outlineLevel: 1,
+                width: 15,
+            },
+            { 
+                header: 'Hour Work', 
+                key: 'hourWork', 
+                outlineLevel: 1,
+                width: 30,
+            },
+            { 
+                header: 'Info', 
+                key: 'info', 
+                outlineLevel: 1,
+                width: 30,
+            },
+        ]
+
+        attedanceList.forEach(item => {
+            worksheet.addRow({
+                date: item.date, 
+                timeIn: DateTime.fromISO(item.dateIn).toFormat('H:mm:ss'), 
+                timeOut: DateTime.fromISO(item.dateOut).toFormat('H:mm:ss'),
+                hourWork: item.duration,
+                info: item.info === null ? '-' : item.info
+            })
+        })
+
+        worksheet.eachRow({ includeEmpty: false }, (_row, rowNumber) => {
+            const insideColumns = ['A', 'B', 'C', 'D', 'E']
+            insideColumns.forEach((v) => {
+                worksheet.getCell(`${v}${rowNumber}`).border = {
+                    top: {style: 'thin'},
+                    bottom: {style: 'thin'},
+                    left: {style: 'thin'},
+                    right: {style: 'thin'}
+                }
+            })
+        })
+
+        // await workbook.xlsx.writeFile('Debtors.xlsx')
+
+        return response.ok({
+            message: "OK"
+        })
+
     }
 }

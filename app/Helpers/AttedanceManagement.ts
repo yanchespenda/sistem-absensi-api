@@ -297,9 +297,15 @@ export default class AttedanceManagement {
         return true
     }
 
-    async attedanceList(userId: number, days: number = this.defaultHistoryDays) {
+    async attedanceList(userId: number, days: number = this.defaultHistoryDays, _offsetDays: number = 0) {
         const getNow = DateTime.local()
-        return await DataAttendence.query().where('userId', userId).whereBetween('createdAt', [getNow.minus({days}).toString(), getNow.toString()])
+        return await DataAttendence.query().where('userId', userId)
+                        .whereBetween('createdAt', [getNow.minus({days}).toString(), getNow.toString()])
+    }
+
+    async attedanceListByDate(userId: number, minDate: DateTime, maxDate: DateTime) {
+        return await DataAttendence.query().where('userId', userId)
+                        .whereBetween('createdAt', [minDate.toString(), maxDate.toString()])
     }
 
     async attedanceListTable(attedances: DataAttendence[]) {
@@ -321,7 +327,6 @@ export default class AttedanceManagement {
                     dataTemp.duration = this.convertDateObjectToString(getDiff)
                     dataTemp.wasOut = true
                     dataTemp.dateOut = getDataOut.createdAt.toString()
-                    dataTemp.duration = this.convertDateObjectToString(getDiff)
                 } else {
                     dataTemp.duration = '-'
                     dataTemp.info = 'Not yet attedanded out'
