@@ -1,12 +1,15 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Application from '@ioc:Adonis/Core/Application'
 import AttedanceManagement from 'App/Helpers/AttedanceManagement'
 import { schema } from '@ioc:Adonis/Core/Validator'
 
 import { DateTime } from 'luxon'
 import ImageManagement from 'App/Helpers/ImageManagement'
 import axios from 'axios'
-import { Workbook } from "exceljs";
-// import FormData from 'form-data'
+import { Workbook } from "exceljs"
+import cloudinary from "cloudinary"
+import path from 'path'
+import fs from 'fs'
 
 import UserFace from 'App/Models/UserFace'
 import User from 'App/Models/User'
@@ -566,10 +569,38 @@ export default class KaryawansController {
             })
         })
 
-        // await workbook.xlsx.writeFile('Debtors.xlsx')
+        const user = await User.find(userId)
+        if (!user) {
+            return response.unprocessableEntity({
+                message: "Current user not found"
+            })
+        }
+
+        const exelName = `report-of-${user.username}.xlsx`
+        const pathExel = path.join(Application.tmpPath('uploads'), exelName)
+        await workbook.xlsx.writeFile(pathExel)
+
+        let responseUpload: any
+        try {
+            const publicId = 'storage/absensi/report/' + exelName
+            responseUpload = await cloudinary.v2.uploader.upload(pathExel, {resource_type: 'raw', public_id: publicId, type: "private", access_mode: "authenticated"})
+        } catch (error) {
+            console.log('error:KaryawansController:historyGenerate:cloudinary', error)
+            return response.unprocessableEntity({
+                message: "Something went wrong"
+            })
+        }
+        fs.unlinkSync(pathExel)
+
+        if (!responseUpload?.secure_url) {
+            return response.unprocessableEntity({
+                message: "Something went wrong"
+            })
+        }
 
         return response.ok({
-            message: "OK"
+            message: "OK",
+            url: responseUpload.secure_url
         })
 
     }

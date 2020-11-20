@@ -105,7 +105,7 @@ Route.group( () => {
     /* History */
     Route.group( () => {
       Route.get('/', 'Role/KaryawansController.historyList')
-      Route.get('/generate', 'Role/KaryawansController.historyGenerate')
+      Route.post('/generate', 'Role/KaryawansController.historyGenerate')
     }).prefix('history')
 
   }).prefix('karyawan').middleware('acl:karyawan')
