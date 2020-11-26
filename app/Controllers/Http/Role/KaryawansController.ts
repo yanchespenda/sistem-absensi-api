@@ -15,7 +15,8 @@ import UserFace from 'App/Models/UserFace'
 import User from 'App/Models/User'
 import MdlStorage from '../../../Models/Storage'
 
-const FACE_RECOG_API = 'https://api.face-recognition.arproject.web.id'
+// const FACE_RECOG_API = 'https://api-face-absensi.project.arproject.web.id' 
+const FACE_RECOG_API = 'https://faceapi-v2-4fs36buoaq-uc.a.run.app'
 const MAX_FACE_DATA = 3
 
 interface DashboardDataKaryawanAttedanceHistory {

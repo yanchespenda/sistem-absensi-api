@@ -12,6 +12,17 @@ interface DefaultAttedanceHistory {
     dateOut: string
 }
 
+interface DefaultStaffAttedanceHistory {
+    id: number
+    username: string
+    info: string | null
+    duration: string
+    wasIn: boolean
+    wasOut: boolean
+    dateIn: string
+    dateOut: string
+}
+
 interface IUserDataStatus {
     found: boolean
     wasIn: boolean
@@ -315,6 +326,43 @@ export default class AttedanceManagement {
                 const getDataOut = this.findDataOutIndexByCreatedAt(attedances, attedance.createdAt.toISODate())
                 let dataTemp: DefaultAttedanceHistory = {
                     date: attedance.createdAt.toISODate(),
+                    duration: '',
+                    info: null,
+                    wasIn: true,
+                    wasOut: false,
+                    dateIn: attedance.createdAt.toString(),
+                    dateOut: ''
+                }
+                if (getDataOut) {
+                    const getDiff = getDataOut.createdAt.diff(attedance.createdAt, ['hours', 'minutes', 'seconds']).toObject()
+                    dataTemp.duration = this.convertDateObjectToString(getDiff)
+                    dataTemp.wasOut = true
+                    dataTemp.dateOut = getDataOut.createdAt.toString()
+                } else {
+                    dataTemp.duration = '-'
+                    dataTemp.info = 'Not yet attedanded out'
+                }
+                attedanceList.push(dataTemp)
+            }
+        }
+        return attedanceList
+    }
+
+    async staffFindAttedanceToday() {
+        const getStartDay = DateTime.fromObject({hour: 0, minute: 0, second: 0}).minus({days: 100})
+        const getLastDay = DateTime.fromObject({hour: 23, minute: 59, second: 59})
+
+        return await DataAttendence.query().preload('userData').whereBetween('createdAt', [getStartDay.toString(), getLastDay.toString()])
+    }
+
+    async staffAttedanceListTable(attedances: DataAttendence[]) {
+        let attedanceList: DefaultStaffAttedanceHistory[] = []
+        for (const attedance of attedances) {
+            if (attedance.attendType === 1) {
+                const getDataOut = this.findDataOutIndexByCreatedAt(attedances, attedance.createdAt.toISODate())
+                let dataTemp: DefaultStaffAttedanceHistory = {
+                    id: attedance.userId,
+                    username: attedance.userData.username,
                     duration: '',
                     info: null,
                     wasIn: true,

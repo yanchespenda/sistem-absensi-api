@@ -71,6 +71,18 @@ Route.group( () => {
 
   }).prefix('admin').middleware('acl:admin')
 
+  /* Staff */
+  Route.group( () => {
+    Route.group( () => {
+      Route.get('/', 'Role/StaffController.attedance')
+
+      Route.group( () => {
+        Route.get('/', 'Role/StaffController.historyList')
+        Route.post('/generate', 'Role/StaffController.historyGenerate')
+      }).prefix('history')
+    }).prefix('attedance')
+  }).prefix('staff').middleware('acl:staff')
+
   /* Karyawan */
   Route.group( () => {
 
@@ -116,59 +128,3 @@ Route.group( () => {
   }).prefix('dashboard').middleware('acl:all')
 
 }).prefix('api').middleware('auth')
-
-// api/karyawan/history
-
-
-// const attadanceIn = {
-//   minH: 8,
-//   minM: 0,
-//   maxH: 9,
-//   maxM: 0
-// }
-// const attadanceOut = {
-//   minH: 16,
-//   minM: 0,
-//   maxH: 18,
-//   maxM: 0
-// }
-// const attadanceDay = {
-//   1: true,
-//   2: true,
-//   3: true,
-//   4: true,
-//   5: true,
-//   6: false,
-//   7: false
-// }
-
-// Route.get('/test', async () => {
-//   const getThisDay = DateTime.local().toFormat('E')
-
-//   // Is this day enable
-//   const enableDay = attadanceDay[getThisDay] ? attadanceDay[getThisDay] : false
-
-//   // Is this day available to attandance
-//   let enableAttadance = false
-//   if (enableDay) {
-//     const getNow = DateTime.local()
-//     const getMinimum = DateTime.fromObject({hour: attadanceIn.minH, minute: attadanceIn.minM})
-//     const getMaximum = DateTime.fromObject({hour: attadanceOut.maxH, minute: attadanceOut.maxM})
-
-//     if (getNow > getMinimum && getNow < getMaximum) {
-//       enableAttadance = true
-//     }
-//   }
-
-  
-  
-//   return { 
-//     message: "Work",
-//     data: {
-//       getThisDay,
-//       enableDay,
-
-//       enableAttadance
-//     }
-//   }
-// })

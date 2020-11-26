@@ -3,6 +3,7 @@ import Hash from '@ioc:Adonis/Core/Hash'
 import { BaseModel, column, hasMany, HasMany, beforeSave, hasOne, HasOne } from '@ioc:Adonis/Lucid/Orm'
 import RoleUser from './RoleUser'
 import Storage from './Storage'
+import DataAttendence from './DataAttendence'
 
 export default class User extends BaseModel {
   public static table = 'users'
@@ -49,4 +50,10 @@ export default class User extends BaseModel {
     foreignKey: 'userId',
   })
   public roleUser: HasMany<typeof RoleUser>
+
+  @hasMany(() => DataAttendence, {
+    localKey: 'id',
+    foreignKey: 'userId',
+  })
+  public dataAttedance: HasMany<typeof DataAttendence>
 }

@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, hasOne, HasOne } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, BelongsTo, belongsTo, column, hasOne, HasOne } from '@ioc:Adonis/Lucid/Orm'
 import Storage from './Storage'
+import User from './User'
 
 export default class DataAttendence extends BaseModel {
   public static table = 'data_attendances'
@@ -28,4 +29,10 @@ export default class DataAttendence extends BaseModel {
     foreignKey: 'id',
   })
   public storageData: HasOne<typeof Storage>
+
+  @belongsTo(() => User, {
+    localKey: 'id',
+    foreignKey: 'userId',
+  })
+  public userData: BelongsTo<typeof User>
 }
