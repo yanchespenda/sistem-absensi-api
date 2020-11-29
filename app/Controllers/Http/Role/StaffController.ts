@@ -53,6 +53,12 @@ export default class StaffController {
         let getParamMax = request.input('end')
 
         const userId = request.input('id') || 0
+        const user = await MdlUser.find(userId)
+        if (!user) {
+            return response.unprocessableEntity({
+                message: "User not found"
+            })
+        }
 
         if (!getParamMin) {
             getParamMin = DateTime.local().minus({days: 30})
@@ -75,7 +81,10 @@ export default class StaffController {
         }
 
 
-        return response.ok(attedanceList)
+        return response.ok({
+            user: user.username,
+            attedanceList
+        })
     }
 
     async historyGenerate({ request, response }: HttpContextContract) {
@@ -89,6 +98,12 @@ export default class StaffController {
         let getParamMax = request.input('end')
 
         const userId = request.input('id') || 0
+        const user = await MdlUser.find(userId)
+        if (!user) {
+            return response.unprocessableEntity({
+                message: "Current user not found"
+            })
+        }
 
         if (!getParamMin) {
             getParamMin = DateTime.local().minus({days: 30})
@@ -173,13 +188,6 @@ export default class StaffController {
                 }
             })
         })
-
-        const user = await MdlUser.find(userId)
-        if (!user) {
-            return response.unprocessableEntity({
-                message: "Current user not found"
-            })
-        }
 
         const exelName = `report-of-${user.username}.xlsx`
         const pathExel = path.join(Application.tmpPath('uploads'), exelName)
