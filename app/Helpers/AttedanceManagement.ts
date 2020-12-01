@@ -349,7 +349,7 @@ export default class AttedanceManagement {
     }
 
     async staffFindAttedanceToday() {
-        const getStartDay = DateTime.fromObject({hour: 0, minute: 0, second: 0}).minus({days: 100})
+        const getStartDay = DateTime.fromObject({hour: 0, minute: 0, second: 0})//.minus({days: 100})
         const getLastDay = DateTime.fromObject({hour: 23, minute: 59, second: 59})
 
         return await DataAttendence.query().preload('userData').whereBetween('createdAt', [getStartDay.toString(), getLastDay.toString()])
