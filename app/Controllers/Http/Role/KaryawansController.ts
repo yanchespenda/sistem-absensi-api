@@ -144,12 +144,14 @@ export default class KaryawansController {
                 resources
             }
 
+            // console.log('formData', formData)
             axiosData = await axios.post(`${FACE_RECOG_API}/verify/url?detail=true`, formData, { 
                 headers: {
                     'authorization': 'Bearer ' + request.auth.token,
                     'Content-Type': 'application/json'
                 }
             })
+            
         } catch (error) {
             try {
                 await imageManagement.removeImage(upload.public_id)
