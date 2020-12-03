@@ -217,4 +217,25 @@ export default class StaffController {
         })
 
     }
+
+    /**
+     * permission check
+     */
+    async permission({ request, response }: HttpContextContract) {
+        if (!request.auth?.userId) {
+            return response.forbidden({
+                message: "Auth token required"
+            })
+        } 
+
+        if (request.roles?.length === 0) {
+            return response.forbidden({
+                message: "You dont have any role"
+            })
+        }
+
+        return response.ok({
+            message: "OK"
+        })
+    }
 }

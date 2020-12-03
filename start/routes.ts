@@ -67,8 +67,17 @@ Route.group( () => {
       Route.post('/:id/save', 'Role/AdminsController.userEditSave').where('id', /^[0-9]+$/)
       Route.delete('/:id/delete', 'Role/AdminsController.userDelete').where('id', /^[0-9]+$/)
     }).prefix('user')
-    
 
+    Route.group( () => {
+      Route.get('/', 'Role/AdminsController.attedance')
+
+      Route.group( () => {
+        Route.get('/', 'Role/AdminsController.historyList')
+        Route.post('/generate', 'Role/AdminsController.historyGenerate')
+      }).prefix('history')
+    }).prefix('attedance')
+    
+    Route.get('/permission', 'Role/AdminsController.permission')
   }).prefix('admin').middleware('acl:admin')
 
   /* Staff */
@@ -81,6 +90,7 @@ Route.group( () => {
         Route.post('/generate', 'Role/StaffController.historyGenerate')
       }).prefix('history')
     }).prefix('attedance')
+    Route.get('/permission', 'Role/StaffController.permission')
   }).prefix('staff').middleware('acl:staff')
 
   /* Karyawan */
@@ -120,6 +130,7 @@ Route.group( () => {
       Route.post('/generate', 'Role/KaryawansController.historyGenerate')
     }).prefix('history')
 
+    Route.get('/permission', 'Role/KaryawansController.permission')
   }).prefix('karyawan').middleware('acl:karyawan')
 
   /* Dashboard */
