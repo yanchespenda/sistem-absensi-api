@@ -32,7 +32,7 @@
     "@types/uuid": "^8.3.0",
     "axios": "^0.20.0",
     "cloudinary": "^1.23.0",
-    "exceljs": "4.1.1",
+    "exceljs": "4.3.0",
     "form-data": "^3.0.0",
     "jsonwebtoken": "^8.5.1",
     "luxon": "^1.25.0",
