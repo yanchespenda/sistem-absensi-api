@@ -24,7 +24,7 @@
   "dependencies": {
     "@adonisjs/ace": "^6.0.0",
     "@adonisjs/core": "^5.0.0-preview-rc",
-    "@adonisjs/fold": "^6.0.0",
+    "@adonisjs/fold": "^8.0.0",
     "@adonisjs/lucid": "^8.4.4",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/luxon": "^1.25.0",
