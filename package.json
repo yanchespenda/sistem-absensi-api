@@ -28,7 +28,7 @@
     "@adonisjs/lucid": "^8.4.4",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/luxon": "^1.25.0",
-    "@types/sharp": "^0.26.0",
+    "@types/sharp": "^0.32.0",
     "@types/uuid": "^8.3.0",
     "axios": "^0.20.0",
     "cloudinary": "^1.23.0",
@@ -41,7 +41,7 @@
     "phc-bcrypt": "^1.0.3",
     "proxy-addr": "^2.0.6",
     "reflect-metadata": "^0.1.13",
-    "sharp": "^0.26.1",
+    "sharp": "^0.33.0",
     "source-map-support": "^0.5.19",
     "sqlite3": "^5.0.0",
     "uuid": "^8.3.0"
